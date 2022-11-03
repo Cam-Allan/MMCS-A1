@@ -1,0 +1,42 @@
+model Assessment_One
+  uses "mmxprs"
+
+  declarations
+    names = 1..3
+    product_names, material_names: array(names) of string
+    product_maxes, product_sale, proportion_copper, profit_per_kgc, material_maxes, material_cost: array(names) of real
+    copper: array(names) of mpvar
+  end-declarations
+
+  initialisations from "A1Data.dat"
+   product_names product_maxes product_sale material_names material_maxes material_cost proportion_copper profit_per_kgc
+  end-initialisations
+
+! Objective Function
+profit := sum(i in names) profit_per_kgc(i)*copper(i)
+
+! Constraints
+sum(i in names) copper(i) <= 80000
+
+forall(i in names) do
+  (9*copper(i))/(10*proportion_copper(i)) <= product_maxes(i)
+end-do
+
+forall(i in names) do
+  ((1-proportion_copper(i))/(proportion_copper(i)))*copper(i) <= material_maxes(i)
+end-do
+
+maximise(profit)
+
+! Output prints
+forall(i in names) do
+	writeln("Amount of ",product_names(i)," produced: ",(9*getsol(copper(i))/(10*proportion_copper(i))),".")
+	writeln("Amount of ",material_names(i)," used: ",((1-proportion_copper(i))/(proportion_copper(i)))*getsol(copper(i)),".")
+	writeln("Amount of copper used to produce ",product_names(i),": ",getsol(copper(i)),".")
+end-do
+
+writeln("Total copper used: ",(sum(i in names) getsol(copper(i))),".")
+
+writeln("Total profit is ",getobjval,".")
+
+end-model
